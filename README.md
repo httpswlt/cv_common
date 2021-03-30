@@ -1,2 +1,2 @@
 # cv_common
-Add some utility scripts for cv of DL
+Add some utility scripts for CV of DL
