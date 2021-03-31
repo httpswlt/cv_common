@@ -4,16 +4,23 @@ import os
 import random
 import re
 import shutil
-
+import glob
 import numpy as np
 
 
 class Labelme2Txt:
-    def __init__(self, classes=None):
-        self.classes = classes
-        self.rm_txt = False
-        self.label_txt_suffix = 'txt'
+    def __init__(self, json_list_path):
+        """
+
+        :param json_list_path:
+        :param image_dir:
+        """
+        self.json_list_path = json_list_path
+
         self.total_datasets_count = {}
+        self.label_txt_suffix = 'txt'
+        self.classes = None
+        self.dtype = 'train'
 
     def set_classes(self, classes):
         """
@@ -22,14 +29,6 @@ class Labelme2Txt:
         :return:
         """
         self.classes = classes
-
-    def set_rm_txt(self, rm_txt):
-        """
-
-        :param rm_txt:
-        :return:
-        """
-        self.rm_txt = rm_txt
 
     def print_total_datasets_info(self):
         """
@@ -82,55 +81,7 @@ class Labelme2Txt:
         tmp.append(img_path)
         data_info['imgs'] = list(set(tmp))
 
-    def json_2_txt(self, json_path):
-        """
-
-        :param json_path:
-        :return:
-        """
-        assert self.classes is not None and len(self.classes) != 0
-        json_result = json.load(open(json_path, "r", encoding="utf-8"))
-        base_dir = os.path.dirname(json_path)
-        json_name = os.path.basename(json_path)[:-5]
-        label_txt = os.path.join(base_dir, "{}.{}".format(json_name, self.label_txt_suffix))
-        if self.rm_txt:
-            if os.path.exists(label_txt):
-                os.remove(label_txt)
-            return
-        out_file = open(label_txt, 'w')
-        h, w = json_result['imageHeight'], json_result['imageWidth']
-        for multi in json_result["shapes"]:
-            points = np.array(multi["points"])
-            xmin = min(points[:, 0]) if min(points[:, 0]) > 0 else 0
-            xmax = max(points[:, 0]) if max(points[:, 0]) > 0 else 0
-            ymin = min(points[:, 1]) if min(points[:, 1]) > 0 else 0
-            ymax = max(points[:, 1]) if max(points[:, 1]) > 0 else 0
-            if xmax <= xmin:
-                pass
-            elif ymax <= ymin:
-                pass
-            else:
-                label = multi["label"]
-                if label not in self.classes:
-                    label = re.sub('_\d+', '', label)
-                cls_id = self.classes.index(label)
-                b = (float(xmin), float(xmax), float(ymin), float(ymax))
-                bb = self.convert((w, h), b)
-                out_file.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
-
-    def json_2_txt_dir(self, json_dir):
-        """
-
-        :param json_dir:
-        :return:
-        """
-        for j_file in os.listdir(json_dir):
-            if not j_file.endswith('.json'):
-                continue
-            json_path = os.path.join(json_dir, j_file)
-            self.json_2_txt(json_path)
-
-    def count_classes(self, json_dir, merge=False, assign_print=None, form='dict'):
+    def count_classes(self, json_dir, merge=False, assign_print=None, form='list'):
         """
 
         :param json_dir:
@@ -172,68 +123,71 @@ class Labelme2Txt:
                     print("label: {}: Path: {}".format(label, json_path))
                 classes.append(label)
 
-    def copy_training_data(self, src_dir, dist_dir):
-        # count all labels
-        targets = []
-        for json_file in os.listdir(src_dir):
-            if not json_file.endswith(self.label_txt_suffix):
-                continue
-            targets.append(os.path.join(src_dir, json_file))
-        training_num = int(len(targets) * 0.9)
-        random.shuffle(targets)
-        training_sets = targets[:training_num]
-        val_sets = targets[training_num:]
-        img_dir = os.path.join(dist_dir, 'images')
-        label_dir = os.path.join(dist_dir, 'labels')
-        os.makedirs(img_dir, exist_ok=True)
-        os.makedirs(label_dir, exist_ok=True)
-        datasets = {
-            'train': training_sets,
-            'val': val_sets
-        }
-        for key, value in datasets.items():
-            type_img_path = os.path.join(img_dir, key)
-            type_label_path = os.path.join(label_dir, key)
-            os.makedirs(type_img_path, exist_ok=True)
-            os.makedirs(type_label_path, exist_ok=True)
-            for label_path in value:
-                img_name = os.path.basename(label_path).split('.{}'.format(self.label_txt_suffix))[0]
-                img_path = os.path.join(src_dir, '{}.jpg'.format(img_name))
+    def set_data_type(self, dtype):
+        self.dtype = 'train'
+
+    def to_txt(self, save_dir, copy_img=False):
+        """
+
+        :param save_dir:
+        :param copy_img:
+        :return:
+        """
+        print("Copy Label Data to {} ".format(save_dir))
+        label_save_dir = os.path.join(save_dir, 'labels', self.dtype)
+        image_save_dir = os.path.join(save_dir, 'images', self.dtype)
+        os.makedirs(label_save_dir, exist_ok=True)
+        os.makedirs(image_save_dir, exist_ok=True)
+        for json_path in self.json_list_path:
+            assert self.classes is not None and len(self.classes) != 0
+            json_result = json.load(open(json_path, "r", encoding="utf-8"))
+            json_suffix = os.path.basename(json_path).split('.')
+            json_suffix[-1] = self.label_txt_suffix
+            json_name = '.'.join(json_suffix)
+            label_txt = os.path.join(label_save_dir, json_name)
+
+            with open(label_txt, 'w') as f:
+                h, w = json_result['imageHeight'], json_result['imageWidth']
+                for multi in json_result["shapes"]:
+                    points = np.array(multi["points"])
+                    xmin = min(points[:, 0]) if min(points[:, 0]) > 0 else 0
+                    xmax = max(points[:, 0]) if max(points[:, 0]) > 0 else 0
+                    ymin = min(points[:, 1]) if min(points[:, 1]) > 0 else 0
+                    ymax = max(points[:, 1]) if max(points[:, 1]) > 0 else 0
+                    if xmax <= xmin:
+                        pass
+                    elif ymax <= ymin:
+                        pass
+                    else:
+                        label = multi["label"]
+                        if label not in self.classes:
+                            label = re.sub('_\d+', '', label)
+                        cls_id = self.classes.index(label)
+                        b = (float(xmin), float(xmax), float(ymin), float(ymax))
+                        bb = self.convert((w, h), b)
+                        f.write(str(cls_id) + " " + " ".join([str(a) for a in bb]) + '\n')
+            if copy_img:
+                json_suffix[-1] = 'jpg'
+                img_name = '.'.join(json_suffix)
+                img_path = os.path.join(os.path.dirname(json_path), img_name)
                 if not os.path.exists(img_path):
-                    img_path = os.path.join(type_img_path, '{}.png'.format(img_name))
-                if os.path.exists(label_path) and os.path.exists(img_path):
-                    shutil.copy(label_path, type_label_path)
-                    shutil.copy(img_path, type_img_path)
-                else:
-                    print(label_path, img_path)
-                    exit(0)
+                    json_suffix[-1] = 'png'
+                    img_name = '.'.join(json_suffix)
+                    img_path = os.path.join(os.path.dirname(json_path), img_name)
+                shutil.copy(img_path, image_save_dir)
+            break
 
 
 def main():
-    convert_var = Labelme2Txt()
+    # json_dir = '/home/lintao/docker_share/logo_data/labelme'
     json_dir = '/mnt/data/logo/training'
-    # classes = convert_var.count_classes(json_dir, merge=True, assign_print='MJHP')
-    classes = convert_var.count_classes(json_dir, merge=False, form='list')
-    # origin_classes = ['apollo', 'BBC', 'epoch', 'Formosa TV News network', 'FTchinese', 'NTD']
-    # classes = origin_classes + classes
+    save_path = '/home/lintao/docker_share/logo_data/txt'
+    json_path = glob.glob(os.path.join(json_dir, "*/*.json"))
 
-    for i, classify in classes.items():
-        print("{}: {}".format(i, classify))
-    print(classes)
-    print("total classify: {}".format(len(classes)))
-
-    # convert_var.set_classes(classes)
-    # # convert_var.set_rm_txt(True)
-    # # exit(0)
-    # new_path = '/home/lintao/datasets/logo_det/logo_{}'.format(len(classes))
-    # if os.path.exists(new_path):
-    #     os.system('rm -rf {}'.format(new_path))
-    # print("Copy Label Data to {} ".format(new_path))
-    # for i, classify in enumerate(os.listdir(json_dir)):
-    #     print(classify)
-    #     classify_path = os.path.join(json_dir, classify)
-    #     # convert_var.json_2_txt_dir(classify_path)
-    #     convert_var.copy_training_data(classify_path, new_path)
+    convert_var = Labelme2Txt(json_path)
+    classes = convert_var.count_classes(json_dir, merge=False)
+    convert_var.set_classes(classes)
+    convert_var.to_txt(save_path)
 
 
 if __name__ == '__main__':

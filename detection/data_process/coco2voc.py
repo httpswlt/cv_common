@@ -10,7 +10,7 @@ from tqdm import tqdm
 import shutil
 
 
-class VOC2COCO:
+class COCO2VOC:
     def __init__(self, json_path, images_dir):
         self.coco_var = COCO(json_path)
         self.images_dir = images_dir
@@ -56,7 +56,7 @@ def test1():
     json_path = "/home/lintao/docker_share/logo_data/coco/annotations/instances_train2017.json"
     images_dir = "/home/lintao/docker_share/logo_data/coco/images/train2017"
     xml_save_path = '/home/lintao/docker_share/logo_data/voc'
-    coco_var = VOC2COCO(json_path, images_dir)
+    coco_var = COCO2VOC(json_path, images_dir)
     coco_var.to_voc(xml_save_path)
 
 
