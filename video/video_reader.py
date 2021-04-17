@@ -203,13 +203,15 @@ def main():
 
     :return:
     """
-    video_var = VideoReader('/home/lintao/datasets/video_comparison/12Magic.mp4', abs_diff=True)
-    for i in range(100):
-        print('i: {}'.format(i))
-        ret, frame1 = video_var.items_key_frame()
-        if frame1 is None:
-            continue
-        cv2.imwrite('./test/test_{}.jpg'.format(i), frame1)
+    video_var = VideoReader('/mnt/data/sample_comparison/catchVideo/test5.mp4', abs_diff=False)
+    # for i in range(100):
+    #     print('i: {}'.format(i))
+    #     ret, frame1 = video_var.items_key_frame()
+    #     if frame1 is None:
+    #         continue
+    #     cv2.imwrite('./test/test_{}.jpg'.format(i), frame1)
+    # frame = video_var.get_img_by_frame()
+    # cv2.imwrite('./test/test.jpg', frame1)
 
     video_var.release()
 

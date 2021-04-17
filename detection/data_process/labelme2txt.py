@@ -124,7 +124,7 @@ class Labelme2Txt:
                 classes.append(label)
 
     def set_data_type(self, dtype):
-        self.dtype = 'train'
+        self.dtype = dtype
 
     def to_txt(self, save_dir, copy_img=False):
         """
@@ -175,16 +175,16 @@ class Labelme2Txt:
                     img_name = '.'.join(json_suffix)
                     img_path = os.path.join(os.path.dirname(json_path), img_name)
                 shutil.copy(img_path, image_save_dir)
-            break
 
 
 def main():
-    # json_dir = '/home/lintao/docker_share/logo_data/labelme'
-    json_dir = '/mnt/data/logo/training'
+    json_dir = '/home/lintao/docker_share/logo_data/labelme/val'
+    # json_dir = '/mnt/data/logo/training'
     save_path = '/home/lintao/docker_share/logo_data/txt'
-    json_path = glob.glob(os.path.join(json_dir, "*/*.json"))
+    json_path = glob.glob(os.path.join(json_dir, "*.json"))
 
     convert_var = Labelme2Txt(json_path)
+    convert_var.set_data_type('val')
     classes = convert_var.count_classes(json_dir, merge=False)
     convert_var.set_classes(classes)
     convert_var.to_txt(save_path)

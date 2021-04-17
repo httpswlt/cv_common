@@ -53,9 +53,9 @@ class COCO2VOC:
 
 
 def test1():
-    json_path = "/home/lintao/docker_share/logo_data/coco/annotations/instances_train2017.json"
-    images_dir = "/home/lintao/docker_share/logo_data/coco/images/train2017"
-    xml_save_path = '/home/lintao/docker_share/logo_data/voc'
+    json_path = "/home/lintao/docker_share/logo_data/coco/annotations/instances_val2017.json"
+    images_dir = "/home/lintao/docker_share/logo_data/coco/images/val2017"
+    xml_save_path = '/home/lintao/docker_share/logo_data/voc/val'
     coco_var = COCO2VOC(json_path, images_dir)
     coco_var.to_voc(xml_save_path)
 

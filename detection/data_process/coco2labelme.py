@@ -80,11 +80,11 @@ class COCO2Labelme:
 
 
 def test1():
-    json_path = "/home/lintao/docker_share/logo_data/coco/annotations/instances_train2017.json"
-    images_dir = "/home/lintao/docker_share/logo_data/coco/images/train2017"
-    xml_save_path = '/home/lintao/docker_share/logo_data/labelme'
+    json_path = "/home/lintao/docker_share/logo_data/coco/annotations/instances_val2017.json"
+    images_dir = "/home/lintao/docker_share/logo_data/coco/images/val2017"
+    json_save_path = '/home/lintao/docker_share/logo_data/labelme/val'
     coco_var = COCO2Labelme(json_path, images_dir)
-    coco_var.to_labelme(xml_save_path)
+    coco_var.to_labelme(json_save_path)
 
 
 if __name__ == '__main__':
