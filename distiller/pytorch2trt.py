@@ -6,7 +6,7 @@
 # --------------------------------------------------------
 import os
 
-os.sys.path.insert(0, '/home/lintao/jobs/torch2trt')
+os.sys.path.insert(0, os.path.join(os.path.expandvars('$HOME'), 'jobs/torch2trt'))
 from torch2trt.torch2trt import *
 
 """
