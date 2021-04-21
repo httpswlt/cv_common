@@ -34,6 +34,9 @@ class DataPrefetch:
         self.preload()
         return inputs, targets
 
+    def __next__(self):
+        return self.next()
+
 
 def main():
     """

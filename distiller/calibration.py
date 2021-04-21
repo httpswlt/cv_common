@@ -7,6 +7,7 @@ import os
 
 import cv2
 import numpy as np
+import pycuda.autoinit
 import pycuda.driver as cuda
 import tensorrt as trt
 import torch
@@ -110,6 +111,7 @@ class ImageCalibrator(Calibrator):
         self.width = width
 
         assert isinstance(images, list) and len(images) > 0
+        self.imgs = images
         self.batch_idx = 0
         self.max_batch_idx = len(self.imgs) // self.batch_size
         self.data_size = trt.volume([self.batch_size, self.channel, self.height, self.width]) * trt.float32.itemsize
