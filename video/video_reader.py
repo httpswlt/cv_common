@@ -29,9 +29,9 @@ class VideoReader:
 
         self.__curr_frame = -1
         self.__pre_frame = -1
-        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
-        self.height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        self.width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.fps = int(self.cap.get(cv2.CAP_PROP_FPS))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.dark_threshold = 50
         self.light_threshold = 240

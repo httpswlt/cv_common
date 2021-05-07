@@ -35,5 +35,20 @@ def test_1():
     torch_2_onnx(model, x, input_names, output_names, save_path)
 
 
+def test_2():
+    from models.yolo import Model
+    device = 'cuda:0'
+    model_path = '/home/lintao/jobs/logo/yolov5-4.0/yolov5s.pt'
+
+    # model = torch.load(model_path)['model'].float()
+    model = Model('/home/lintao/jobs/logo/yolov5-4.0/models/yolov5s.yaml').eval()
+    model.to(device)
+    model.model[-1].export = True
+    x = torch.ones((1, 3, 640, 640)).float().cuda()
+    y = model(x)
+    save_path = model_path.replace('.pt', '.onnx')  # filename
+    torch_2_onnx(model, x, input_names=['images'], output_names=['classes'], save_path=save_path)
+
+
 if __name__ == '__main__':
-    test_1()
+    test_2()
