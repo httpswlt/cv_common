@@ -68,6 +68,9 @@ class VideoReader:
         self.abs_diff = True
         self.frame_interval = 0
 
+    def set_pixel_threshold(self, pixel_threshold):
+        self.pixel_threshold = pixel_threshold
+
     def set_total_frames(self, total_frames):
         """
 
@@ -128,6 +131,8 @@ class VideoReader:
         ret, curr_img = self.items_frame()
 
         if self.abs_diff:
+            if curr_img is None:
+                return ret, curr_img
 
             curr_img_avg = np.average(curr_img)
 
@@ -159,7 +164,7 @@ class VideoReader:
                 self.pre_img = curr_img
             else:
                 curr_img = None
-            print('diff: {}'.format(diff))
+            # print('diff: {}'.format(diff))
             return curr_img
 
     def _frame_interval(self, frame_interval, curr_img):
