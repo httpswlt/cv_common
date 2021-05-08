@@ -29,10 +29,10 @@ class VideoReader:
 
         self.__curr_frame = -1
         self.__pre_frame = -1
-        self.fps = int(self.cap.get(cv2.CAP_PROP_FPS))
-        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.total_frames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+        self.height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.total_frames = self.cap.get(cv2.CAP_PROP_FRAME_COUNT)
         self.dark_threshold = 50
         self.light_threshold = 240
         self.pre_img = None
@@ -44,14 +44,14 @@ class VideoReader:
 
         :return:
         """
-        return self.total_frames
+        return int(self.total_frames)
 
     def get_fps(self):
         """
 
         :return:
         """
-        return self.fps
+        return int(self.fps)
 
     def get_resolution(self):
         """
